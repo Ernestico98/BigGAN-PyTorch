@@ -153,7 +153,7 @@ class Attention(nn.Module):
     self.o = self.which_conv(self.ch // 2, self.ch, kernel_size=1, padding=0, bias=False)
     # Learnable gain parameter
     self.gamma = P(torch.tensor(0.), requires_grad=True)
-  def forward(self, x, y=None):
+  def forward(self, x, y=None,alpha=0, inx=0, method = None):
     # Apply convs
     theta = self.theta(x)
     phi = F.max_pool2d(self.phi(x), [2,2])
@@ -269,7 +269,6 @@ def groupnorm(x, norm_style):
     groups = 16
   return F.group_norm(x, groups)
 
-
 # Class-conditional bn
 # output size is the number of channels, input size is for the linear layers
 # Andy's Note: this class feels messy but I'm not really sure how to clean it up
@@ -303,10 +302,61 @@ class ccbn(nn.Module):
       self.register_buffer('stored_var',  torch.ones(output_size)) 
     
     
-  def forward(self, x, y):
+  def forward(self, x, y,alpha, inx, method = None):
     # Calculate class-conditional gains and biases
+
+    # if x.shape[2] == 8:
+    W1 = self.gain.weight[:,128:]
+    u1, s1, v1 = torch.svd(W1)
+    W2 = self.bias.weight[:,128:]
+    u2, s2, v2 = torch.svd(W2)
+    # torch.save(v1[:,0],'direction.pth')
+    
+    if method == 'linearin':
+        y[0,128:] = y[0,128:] + alpha* v1[:, inx]
+
+    if method == 'greatin':
+      Pv = v1[:, inx].unsqueeze(0).T.matmul(v1[:, inx].unsqueeze(0))
+      Pvl = torch.eye(20).cuda() - Pv
+      pvzzo = Pvl.matmul(y[0, 128:]).unsqueeze(0)
+      z_norm = y[0, 128:].norm(2)
+      step = alpha
+      tetain = torch.sign(y[0, 128:].matmul(v1[:, inx].unsqueeze(0).T))
+      theta_zero = tetain * np.arccos((pvzzo.norm(2) / z_norm).detach().cpu().numpy())
+
+
+      y[0, 128:] = z_norm * ((torch.cos((step+theta_zero))) * (pvzzo / pvzzo.norm(2)) + (torch.sin(step+theta_zero)) * v1[:, inx])
+
+      print("stop when step = ", np.pi / 2.0 - theta_zero)
+
+    if method == 'smallin':
+      vv = torch.zeros((20, 2)).cuda()
+      vv[:, 0] = v1[:, inx]
+      vv[:, 1] = v1[:, 19]
+      Pv = vv.matmul(vv.T)
+      Pvref = v1[:, 19].unsqueeze(0).T.matmul(v1[:, 19].unsqueeze(0))
+      Pvl = torch.eye(20).cuda() - Pv
+      Pvz = (Pv.matmul(y[0, 128:])).T.matmul(Pv.matmul(y[0, 128:]))
+      pvzzo = Pvl.matmul(y[0, 128:]).unsqueeze(0)
+
+      step = alpha
+
+      tetain = torch.sign((Pv.matmul(y[0, 128:])).matmul(v1[:, inx].unsqueeze(0).T))
+      theta_zero = tetain * np.arccos(
+        ((Pvref.matmul(y[0, 128:].T)).norm(2) / torch.sqrt(Pvz)).detach().cpu().numpy()
+      )
+
+      y[0, 128:] = pvzzo + torch.sqrt(Pvz) * (
+              (torch.cos((theta_zero+step))) * (v1[:, 19]) + (torch.sin(theta_zero+step)) * (v1[:, inx]))
+
+
+
     gain = (1 + self.gain(y)).view(y.size(0), -1, 1, 1)
+
+
+
     bias = self.bias(y).view(y.size(0), -1, 1, 1)
+
     # If using my batchnorm
     if self.mybn or self.cross_replica:
       return self.bn(x, gain=gain, bias=bias)
@@ -322,7 +372,9 @@ class ccbn(nn.Module):
         out = groupnorm(x, self.normstyle)
       elif self.norm_style == 'nonorm':
         out = x
+
       return out * gain + bias
+      
   def extra_repr(self):
     s = 'out: {output_size}, in: {input_size},'
     s +=' cross_replica={cross_replica}'
@@ -395,15 +447,48 @@ class GBlock(nn.Module):
     # upsample layers
     self.upsample = upsample
 
-  def forward(self, x, y):
-    h = self.activation(self.bn1(x, y))
+  def forward(self, x, y, alpha , inx, method):
+
+
+    h = self.activation(self.bn1(x,y,alpha,inx ,method))
+
+    # if (h.shape[2] == 4 or h.shape[2] == 8):
+    # inf = (h.shape[2] // 4)
+    # h[:, :, 0 * inf:1 * inf, :] = h[2, :, 0 * inf:1 * inf, :].unsqueeze(0).repeat(4, 1, 1, 1)
+    # h[:, :, :, 0 * inf:1 * inf] = h[2, :, :, 0 * inf:1 * inf].unsqueeze(0).repeat(4, 1, 1, 1)
+    # h[:, :, :, 3 * inf:4 * inf] = h[2, :, :, 3 * inf:4 * inf].unsqueeze(0).repeat(4, 1, 1, 1)
+    # h[:, :, 3 * inf:4 * inf, :] = h[2, :, 3 * inf:4 * inf, :].unsqueeze(0).repeat(4, 1, 1, 1)
+
     if self.upsample:
       h = self.upsample(h)
+      # if h.shape[2] == 8:
+      #   B,C,H,E = h.shape
+      #   inf = (H // 4)
+      #   h = torch.roll(h,inf)
+      #   new = (1/500)*torch.sqrt(h.norm())*torch.randn(B,C,H,inf).cuda()
+      #   h[:,:,:,0:inf] = new
+
       x = self.upsample(x)
+
+    # h = h + x
+
     h = self.conv1(h)
-    h = self.activation(self.bn2(h, y))
+    # if h.shape[2] == 32:
+    #   h = h[0,:,:,:].unsqueeze(0).repeat(4,1,1,1)
+    # h = self.activation(self.bn2(h, y))
+    h = self.activation(self.bn2(h, y, alpha,inx,method))
+
+    # inf = (h.shape[2] // 4)
+    # h[:, :, 0 * inf:1 * inf, :] = h[0, :, 0 * inf:1 * inf, :].unsqueeze(0).repeat(4, 1, 1, 1)
+    # h[:, :, :, 0 * inf:1 * inf] = h[0, :, :, 0 * inf:1 * inf].unsqueeze(0).repeat(4, 1, 1, 1)
+    # h[:, :, :, 3 * inf:4 * inf] = h[0, :, :, 3 * inf:4 * inf].unsqueeze(0).repeat(4, 1, 1, 1)
+    # h[:, :, 3 * inf:4 * inf, :] = h[0, :, 3 * inf:4 * inf, :].unsqueeze(0).repeat(4, 1, 1, 1)
+
     h = self.conv2(h)
-    if self.learnable_sc:       
+    # if h.shape[2] == 32:
+    #   h[1:2,:,:,:] = h[1:2,:,:,:]+0.1*torch.randn((h.shape[1],h.shape[2],h.shape[3])).cuda()
+    # h = torch.flip(h,[3])
+    if self.learnable_sc:
       x = self.conv_sc(x)
     return h + x
     

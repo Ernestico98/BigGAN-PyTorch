@@ -48,7 +48,7 @@ def prepare_parser():
     '--no_pin_memory', action='store_false', dest='pin_memory', default=True,
     help='Pin data into memory through dataloader? (default: %(default)s)') 
   parser.add_argument(
-    '--shuffle', action='store_true', default=False,
+    '--shuffle', action='store_true', default=True,
     help='Shuffle the data (strongly recommended)? (default: %(default)s)')
   parser.add_argument(
     '--load_in_mem', action='store_true', default=False,
