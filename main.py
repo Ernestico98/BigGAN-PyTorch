@@ -67,7 +67,7 @@ ims = []
 with torch.no_grad():
         z_.sample_()
         y_.sample_()
-        y_[0] = 833
+        y_[0] = 989
 
 for i in range(alphas.shape[0]):
     z_save = z_.clone()
@@ -84,11 +84,10 @@ image_grid_np = np.uint8(image_grid_np)
 print("Image Grid Shape: {}".format(np.shape(image_grid_np)))
 print("Max pixel value: {}".format(np.max(image_grid_np)))
 print("Min pixel value: {}".format(np.min(image_grid_np)))
-fi = plt.imsave(out_folder + "tmp.png", image_grid_np)
+fi = plt.imsave(out_folder + "l_shifty.png", image_grid_np)
 # fi.axes.get_yaxis().set_visible(False)
 # fi.axes.get_xaxis().set_visible(False)
 
-exit(0)
 
 
 alphas = torch.linspace(3, -3, 7)
@@ -113,10 +112,11 @@ image_grid_np = np.uint8(image_grid_np)
 print("Image Grid Shape: {}".format(np.shape(image_grid_np)))
 print("Max pixel value: {}".format(np.max(image_grid_np)))
 print("Min pixel value: {}".format(np.min(image_grid_np)))
-fi = plt.imshow(image_grid_np)
-fi.axes.get_yaxis().set_visible(False)
-fi.axes.get_xaxis().set_visible(False)
+fi = plt.imsave(out_folder + "lshitx.png", image_grid_np)
+# fi.axes.get_yaxis().set_visible(False)
+# fi.axes.get_xaxis().set_visible(False)
 
+exit(0)
 
 
 alphas = torch.linspace(-3, 3, 7)
