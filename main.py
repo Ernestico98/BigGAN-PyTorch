@@ -84,7 +84,7 @@ image_grid_np = np.uint8(image_grid_np)
 print("Image Grid Shape: {}".format(np.shape(image_grid_np)))
 print("Max pixel value: {}".format(np.max(image_grid_np)))
 print("Min pixel value: {}".format(np.min(image_grid_np)))
-fi = plt.imshow(out_folder + "tmp.png", image_grid_np)
+fi = plt.imsave(out_folder + "tmp.png", image_grid_np)
 # fi.axes.get_yaxis().set_visible(False)
 # fi.axes.get_xaxis().set_visible(False)
 
