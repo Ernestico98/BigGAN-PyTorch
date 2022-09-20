@@ -287,7 +287,7 @@ class Generator(nn.Module):
 
 
     if method == 'svd_scircle':
-        W = self.linear.weight
+        W = self.linear.weight.detach()
         u, s, v = torch.svd(W)
         vv = torch.zeros((20,2)).cuda()
         vv[:,0] = v[:,inx]

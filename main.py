@@ -359,8 +359,6 @@ fi = plt.imsave(out_folder + "smallin.png", image_grid_np)
 # fi.axes.get_yaxis().set_visible(False)
 # fi.axes.get_xaxis().set_visible(False)
 
-exit(0)
-
 
 with torch.no_grad():
     z_.sample_()
