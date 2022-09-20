@@ -59,6 +59,7 @@ G_batch_size = max(config["G_batch_size"], config["batch_size"])
 )
 
 
+out_folder = './out/'
 
 
 alphas = torch.linspace(-3, 3, 7)
@@ -83,11 +84,11 @@ image_grid_np = np.uint8(image_grid_np)
 print("Image Grid Shape: {}".format(np.shape(image_grid_np)))
 print("Max pixel value: {}".format(np.max(image_grid_np)))
 print("Min pixel value: {}".format(np.min(image_grid_np)))
-fi = plt.imshow(image_grid_np)
-fi.axes.get_yaxis().set_visible(False)
-fi.axes.get_xaxis().set_visible(False)
+fi = plt.imshow(out_folder + "tmp.png", image_grid_np)
+# fi.axes.get_yaxis().set_visible(False)
+# fi.axes.get_xaxis().set_visible(False)
 
-
+exit(0)
 
 
 alphas = torch.linspace(3, -3, 7)
