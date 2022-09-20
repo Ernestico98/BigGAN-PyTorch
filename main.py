@@ -98,7 +98,7 @@ with torch.no_grad():
         y_[0] = 989
 
 for i in range(alphas.shape[0]):
-    z_save = copy.deepcopy(z_)
+    z_save = z_.clone()
     ims.append(G(z_save, G.shared(y_),method = 'l_shiftx', alpha = alphas[i]).detach())
 
 image_grid = torchvision.utils.make_grid(
