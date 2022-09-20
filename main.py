@@ -175,7 +175,6 @@ fi = plt.imsave(out_folder + "nl_zoom.png",  image_grid_np)
 # fi.axes.get_yaxis().set_visible(False)
 # fi.axes.get_xaxis().set_visible(False)
 
-exit(0)
 
 
 with torch.no_grad():
@@ -184,7 +183,7 @@ with torch.no_grad():
         y_[0] = 158
 
 ims = []
-z_save = copy.deepcopy(z_)
+z_save = z_.clone()
 ims.append(G(z_save, G.shared(y_), method='nl_shiftx', alpha=3, inx=0.05).detach())
 ims.append(G(z_save, G.shared(y_), method='nl_shiftx', alpha=2, inx=0.05).detach())
 ims.append(G(z_save, G.shared(y_), method='nl_shiftx', alpha=1, inx=0.05).detach())
@@ -204,12 +203,9 @@ image_grid_np = np.uint8(image_grid_np)
 print("Image Grid Shape: {}".format(np.shape(image_grid_np)))
 print("Max pixel value: {}".format(np.max(image_grid_np)))
 print("Min pixel value: {}".format(np.min(image_grid_np)))
-fi = plt.imshow(image_grid_np)
-fi.axes.get_yaxis().set_visible(False)
-fi.axes.get_xaxis().set_visible(False)
-
-
-
+fi = plt.imsave(out_folder + "nl_shiftx.png", image_grid_np)
+# fi.axes.get_yaxis().set_visible(False)
+# fi.axes.get_xaxis().set_visible(False)
 
 
 
@@ -219,7 +215,7 @@ with torch.no_grad():
         y_[0] = 158
 
 ims = []
-z_save = copy.deepcopy(z_)
+z_save = z_.clone()
 ims.append(G(z_save, G.shared(y_), method='nl_shifty', alpha=-2, inx=0.1).detach())
 ims.append(G(z_save, G.shared(y_), method='nl_shifty', alpha=-1, inx=0.1).detach())
 ims.append(G(z_save, G.shared(y_)).detach())
@@ -237,12 +233,12 @@ image_grid_np = np.uint8(image_grid_np)
 print("Image Grid Shape: {}".format(np.shape(image_grid_np)))
 print("Max pixel value: {}".format(np.max(image_grid_np)))
 print("Min pixel value: {}".format(np.min(image_grid_np)))
-fi = plt.imshow(image_grid_np)
-fi.axes.get_yaxis().set_visible(False)
-fi.axes.get_xaxis().set_visible(False)
+fi = plt.imsave(out_folder + "nl_shifty.png",  image_grid_np)
+# fi.axes.get_yaxis().set_visible(False)
+# fi.axes.get_xaxis().set_visible(False)
 
 
-
+exit(0)
 
 with torch.no_grad():
     z_.sample_()
