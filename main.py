@@ -67,7 +67,7 @@ ims = []
 with torch.no_grad():
         z_.sample_()
         y_.sample_()
-        y_[0] = 123
+        y_[0] = 833
 
 for i in range(alphas.shape[0]):
     z_save = z_.clone()
