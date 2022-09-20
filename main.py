@@ -300,8 +300,6 @@ fi = plt.imsave(out_folder + "linearin.png", image_grid_np)
 # fi.axes.get_yaxis().set_visible(False)
 # fi.axes.get_xaxis().set_visible(False)
 
-exit(0)
-
 
 with torch.no_grad():
     z_.sample_()
@@ -309,11 +307,11 @@ with torch.no_grad():
     y_[0] = 155
 
 ims = []
-z_save = copy.deepcopy(z_).clamp_(-1,1)
+z_save = z_.clone().clamp_(-1,1)
 a = 2*np.pi # Explore the whole circle not ordered
 alphas = torch.arange(0,a,0.6)
 for i in range(alphas.shape[0]):
-    z_save = copy.deepcopy(z_).clamp_(-1, 1)
+    z_save = z_.clone().clamp_(-1, 1)
     ims.append(G(z_save, G.shared(y_), method='greatin', alpha=alphas[i] , inx=0, inx2=4).detach()) # inx2 here comes for the scale i.e., 8 for the second, 16 for the third and 64 for the upper one.
 
 image_grid = torchvision.utils.make_grid(
@@ -327,9 +325,9 @@ image_grid_np = np.uint8(image_grid_np)
 print("Image Grid Shape: {}".format(np.shape(image_grid_np)))
 print("Max pixel value: {}".format(np.max(image_grid_np)))
 print("Min pixel value: {}".format(np.min(image_grid_np)))
-fi = plt.imshow(image_grid_np)
-fi.axes.get_yaxis().set_visible(False)
-fi.axes.get_xaxis().set_visible(False)
+fi = plt.imsave(out_folder + "greatin.png", image_grid_np)
+# fi.axes.get_yaxis().set_visible(False)
+# fi.axes.get_xaxis().set_visible(False)
 
 
 
@@ -339,11 +337,11 @@ with torch.no_grad():
     y_[0] = 155
 
 ims = []
-z_save = copy.deepcopy(z_).clamp_(-1,1)
+z_save = z_.clone().clamp_(-1,1)
 a = 2*np.pi # Explore the whole circle not ordered
 alphas = torch.arange(0,a,0.2)
 for i in range(alphas.shape[0]):
-    z_save = copy.deepcopy(z_).clamp_(-1, 1)
+    z_save = z_.clone().clamp_(-1, 1)
     ims.append(G(z_save, G.shared(y_), method='smallin', alpha=alphas[i] , inx=0, inx2=4).detach()) # inx2 here comes for the scale the options are [4,8,16,32,64]
 
 image_grid = torchvision.utils.make_grid(
@@ -357,12 +355,9 @@ image_grid_np = np.uint8(image_grid_np)
 print("Image Grid Shape: {}".format(np.shape(image_grid_np)))
 print("Max pixel value: {}".format(np.max(image_grid_np)))
 print("Min pixel value: {}".format(np.min(image_grid_np)))
-fi = plt.imshow(image_grid_np)
-fi.axes.get_yaxis().set_visible(False)
-fi.axes.get_xaxis().set_visible(False)
-
-
-
+fi = plt.imsave(out_folder + "smallin.png", image_grid_np)
+# fi.axes.get_yaxis().set_visible(False)
+# fi.axes.get_xaxis().set_visible(False)
 
 
 
@@ -372,7 +367,7 @@ with torch.no_grad():
     y_[0] = 155
 
 ims = []
-z_save = copy.deepcopy(z_)
+z_save = z_.clone()
 ims.append(G(z_save, G.shared(y_)).detach())
 ims.append(G(z_save, G.shared(y_) ,method='svd_scircle', alpha=torch.tensor(0.0) , inx=0, inx2=19).detach())
 
@@ -381,7 +376,7 @@ ims.append(G(z_save, G.shared(y_)).detach())
 a = 0.7148 # read the results and set
 alphas = torch.arange(0,a,0.1)
 for i in range(alphas.shape[0]):
-    z_save = copy.deepcopy(z_).clamp_(-1, 1)
+    z_save = z_.clone().clamp_(-1, 1)
     ims.append(G(z_save, G.shared(y_), method='svd_scircle', alpha=alphas[i] , inx=0, inx2=19).detach())
 
 image_grid = torchvision.utils.make_grid(
@@ -395,9 +390,9 @@ image_grid_np = np.uint8(image_grid_np)
 print("Image Grid Shape: {}".format(np.shape(image_grid_np)))
 print("Max pixel value: {}".format(np.max(image_grid_np)))
 print("Min pixel value: {}".format(np.min(image_grid_np)))
-fi = plt.imshow(image_grid_np)
-fi.axes.get_yaxis().set_visible(False)
-fi.axes.get_xaxis().set_visible(False)
+fi = plt.imsave(out_folder + "svd_scircle.png", image_grid_np)
+# fi.axes.get_yaxis().set_visible(False)
+# fi.axes.get_xaxis().set_visible(False)
 
 
 
