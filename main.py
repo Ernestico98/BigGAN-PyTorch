@@ -248,7 +248,7 @@ z_save = z_.clone().clamp_(-1,1)
 (G(z_save, G.shared(y_), method='svd_gcircle', alpha=torch.tensor(0.0) , inx=0, inx2=19).detach())
 
 ims = []
-z_save = copy.deepcopy(z_).clamp_(-1,1)
+z_save = z_.clone().clamp_(-1,1)
 ims.append(G(z_save, G.shared(y_)).detach())
 a = np.pi # Explore the whole circle not ordered
 alphas = torch.arange(0,a,0.6)
