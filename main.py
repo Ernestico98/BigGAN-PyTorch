@@ -18,7 +18,7 @@ import utils
 parser = utils.prepare_parser()
 parser = utils.add_sample_parser(parser)
 config = vars(parser.parse_args(''))  # use default arguments
-config["seed"] = 0
+config["seed"] = 128
 config["resolution"] = utils.imsize_dict["I128_hdf5"]
 config["n_classes"] = utils.nclass_dict["I128_hdf5"]
 config["G_activation"] = utils.activation_dict["inplace_relu"]
